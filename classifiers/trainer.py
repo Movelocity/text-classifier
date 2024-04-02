@@ -99,7 +99,7 @@ class Trainer:
             num_warmup_steps=20,
             num_training_steps=len(self.train_loader) * num_epochs / self.gradient_accumulation_steps
         )
-        for epoch in num_epochs:
+        for epoch in range(num_epochs):
             mean_loss = self.train_epoch()
             topk = self.evaluate()
             print(f"t1: {topk['top1']:.3f}, t3: {topk['top3']:.3f}, t5: {topk['top5']:.3f}, loss: {mean_loss:.3f} [{epoch}]")
