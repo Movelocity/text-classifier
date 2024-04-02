@@ -3,7 +3,6 @@ from torch import nn
 from torch.optim.lr_scheduler import LambdaLR
 from tqdm import tqdm
 import numpy as np
-import pandas as pd 
 from tools import plot_training_history
 
 def calculate_top_n_accuracies(preds, labels, n):
@@ -91,8 +90,6 @@ class Trainer:
             "top5": top5 / total
         }
         return topk
-
-    
 
     def train(self, num_epochs):
         # Train the model
