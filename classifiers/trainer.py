@@ -1,9 +1,9 @@
 import torch
-from torch import nn
-from torch.optim.lr_scheduler import LambdaLR
-from tqdm import tqdm
 import numpy as np
-from tools import plot_training_history
+from torch import nn
+from tqdm import tqdm
+from torch.optim.lr_scheduler import LambdaLR
+from .tools import plot_training_history
 
 def calculate_top_n_accuracies(preds, labels, n):
     n = min(preds.size(1), n)  # Ensure n does not exceed the number of classes
