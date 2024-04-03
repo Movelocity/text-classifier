@@ -1,7 +1,12 @@
 import os
 import torch
 from torch import nn
-from transformers import BertPreTrainedModel, BertTokenizer, BertModel
+from transformers import BertPreTrainedModel, BertTokenizer, BertModel, BertForSequenceClassification
+from peft import get_peft_model, LoraConfig, TaskType, LoraModel
+
+from transformers import AutoConfig
+
+AutoConfig(problem_type='single_label_classification')
 
 
 class BertClassifier(BertPreTrainedModel):
