@@ -3,7 +3,7 @@ import numpy as np
 from torch import nn
 from tqdm import tqdm
 from transformers import get_linear_schedule_with_warmup
-
+from plot_utils import multiline_plot
 
 class AccuracyMetric:
     def __init__(self,):
@@ -78,6 +78,12 @@ class Trainer:
             self.loss_trace.append(epoch_loss)
             self.acc_trace.append(eval_score)
             print(f"epoch {epoch}: acc: {eval_score}, loss: {epoch_loss}")
+    
+    def plot_history(self):
+        multiline_plot(self.xs, {
+            "loss": self.loss_trace,
+            "accuracy": self.acc_trace
+        })
 
     def reset_logs(self):
         self.step = 0

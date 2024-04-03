@@ -4,7 +4,8 @@ import numpy as np
 import os 
 
 colorlist = list(colors.TABLEAU_COLORS)
-def show_logit_diff(probs, labels):
+
+def double_heatmap_plot(probs, labels):
     label_space = np.zeros(probs.shape)
     for i, v in enumerate(labels):
         label_space[i][v] = 1

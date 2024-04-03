@@ -4,9 +4,7 @@ import matplotlib.pyplot as plt
 from data_utils import TextDatasetGPU
 from pathlib import Path
 
-from plot_utils import show_logit_diff
 from data_utils import DataLoader, read_csv_labels
-from models import default_model
 from transformers import AutoTokenizer, BertForSequenceClassification
 
 
@@ -37,22 +35,5 @@ def main(model_dir):
     #     hidden_dropout_prob=0.3,
     #     num_labels=len(label2id.keys()),
     # )
-    
+
     optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5, eps=1e-8)
-
-    trainer = Trainer(model, optimizer, train_loader, eval_loader, device)
-    trainer.train(5)
-
-    test_loader = DataLoader(test_dataset, batch_size=48, shuffle=True)
-    for batch in test_loader:
-        with torch.no_grad():
-            probs = model(
-                input_ids=batch['input_ids'], 
-                attention_mask=batch['attention_mask'], 
-                token_type_ids=batch['token_type_ids']
-            )
-        break
-    show_diff(
-        probs.detach().cpu().numpy(), 
-        batch['labels'].cpu().numpy()
-    )
