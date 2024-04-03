@@ -74,7 +74,7 @@ class Trainer:
     def train(self, num_epochs):
         for epoch in range(num_epochs):
             epoch_loss = self.train_epoch()
-            eval_score = self.eval_epoch()['accuracy']
+            eval_score = self.eval_epoch()
             self.loss_trace.append(epoch_loss)
             self.acc_trace.append(eval_score)
             print(f"epoch {epoch}: acc: {eval_score}, loss: {epoch_loss}")

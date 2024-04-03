@@ -23,7 +23,7 @@ def load_split_data(
         input_dir:tp.Union[str, Path], 
         output_dir:tp.Union[str, Path],
         split_ratio:list=[8, 1, 1]
-    )->tp.NoReturn:
+    ):
     """
     - 数据文件格式: txt
     - 编码: 主流字符编码即可, utf-8, utf-16, gb2312. 切分后统一保存为utf-8
