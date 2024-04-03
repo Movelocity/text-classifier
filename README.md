@@ -5,7 +5,7 @@ text classification pipeline
 
 ```shell
 !git clone https://github.com/Movelocity/text-classifier.git
-!pip install chardet
+!pip install chardet peft
 %cd text-classifier
 ```
 
