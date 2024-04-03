@@ -77,13 +77,14 @@ class Trainer:
             eval_score = self.eval_epoch()
             self.loss_trace.append(epoch_loss)
             self.acc_trace.append(eval_score)
+            self.xs.append(epoch+1)
             print(f"epoch {epoch}: acc: {eval_score}, loss: {epoch_loss}")
     
     def plot_history(self):
         multiline_plot(self.xs, {
             "loss": self.loss_trace,
             "accuracy": self.acc_trace
-        })
+        }, title='training history', xlabel='epoch')
 
     def reset_logs(self):
         self.step = 0

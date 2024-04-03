@@ -34,6 +34,9 @@ def calculate_top_n_accuracies(preds, labels, n):
 
 
 def eval_as_table(model, tokenizer, dataloader, id2label):
+    top1, top3, top5 = 0, 0, 0
+    total = 0
+
     texts = []
     preds = []
     targets = []
@@ -69,7 +72,7 @@ def eval_as_table(model, tokenizer, dataloader, id2label):
     
     df = pd.DataFrame({
         "text": texts,
-        "label": [id2label(t) for t in targets],
+        "label": [id2label[t] for t in targets],
         "t1": [id2label(p[0]) for p in preds],
         "t2": [id2label(p[1]) for p in preds],
         "t3": [id2label(p[2]) for p in preds]
