@@ -190,7 +190,11 @@ class TextDatasetGPU(Dataset):
         
         with open(file_path, 'r', encoding='utf-8') as f:
             for line in tqdm(f.readlines()):
-                category, text = line.strip().split('\t')
+                cleaned_line = line.strip()
+                if '\t' not in cleaned_line or len(cleaned_line) == 0:
+                    print(f"{file_path}: {cleaned_line}")
+                    continue
+                category, text = cleaned_line.split('\t')
                 if type(text) is list:
                     text = ''.join(text)
                 if len(text) == 0:
