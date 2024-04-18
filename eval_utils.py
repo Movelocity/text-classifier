@@ -47,11 +47,11 @@ def eval_as_table(model, tokenizer, dataloader, id2label):
             labels = batch['labels']
 
             # Handle the possibility that 'token_type_ids' may not be present
-            token_type_ids = batch.get('token_type_ids', None)
+            # token_type_ids = batch.get('token_type_ids', None)
             model_kwargs = {
                 'input_ids': batch['input_ids'], 
                 'attention_mask': batch['attention_mask'],
-                'token_type_ids': batch['token_type_ids']
+                # 'token_type_ids': batch['token_type_ids']
             }
             # Get the logits from the model
             outputs = model(**model_kwargs)

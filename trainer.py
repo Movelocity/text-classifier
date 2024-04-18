@@ -60,7 +60,7 @@ class Trainer:
                 model_kwargs = {
                     'input_ids': batch['input_ids'], 
                     'attention_mask': batch['attention_mask'],
-                    'token_type_ids': batch['token_type_ids']
+                    # 'token_type_ids': batch['token_type_ids']
                 }
                 outputs = self.model(**model_kwargs)
             predictions = outputs.logits.argmax(dim=-1)

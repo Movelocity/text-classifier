@@ -24,7 +24,7 @@ class BertClassifier(BertPreTrainedModel):
                 position_ids=None, head_mask=None, labels=None):  
         bert_outputs = self.bert(
             input_ids, 
-            token_type_ids=token_type_ids, 
+            # token_type_ids=token_type_ids, 
             attention_mask=attention_mask,
             position_ids=position_ids,
             head_mask=head_mask

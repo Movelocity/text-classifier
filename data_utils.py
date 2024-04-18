@@ -140,7 +140,7 @@ class NormalDataset(Dataset):
         self.tokenizer = tokenizer
         self.texts = []
         self.input_ids = []
-        self.token_type_ids = []
+        # self.token_type_ids = []
         self.attention_mask = []
         self.targets = []
         self.device = device
@@ -158,12 +158,12 @@ class NormalDataset(Dataset):
                 )
                 self.texts.append(text)
                 self.input_ids.append(encoded['input_ids'].squeeze(0))
-                self.token_type_ids.append(encoded['token_type_ids'].squeeze(0))
+                # self.token_type_ids.append(encoded['token_type_ids'].squeeze(0))
                 self.attention_mask.append(encoded['attention_mask'].squeeze(0))
                 self.targets.append(int(category))
 
         self.input_ids = torch.stack(self.input_ids)
-        self.token_type_ids = torch.stack(self.token_type_ids)
+        # self.token_type_ids = torch.stack(self.token_type_ids)
         self.attention_mask = torch.stack(self.attention_mask)
         self.targets = torch.tensor(self.targets, dtype=torch.long)
 
@@ -173,7 +173,7 @@ class NormalDataset(Dataset):
     def __getitem__(self, idx):
         return {
             'input_ids': self.input_ids[idx].to(self.device),
-            'token_type_ids': self.token_type_ids[idx].to(self.device),
+            # 'token_type_ids': self.token_type_ids[idx].to(self.device),
             'attention_mask': self.attention_mask[idx].to(self.device),
             'labels': self.targets[idx].to(self.device)
         }
@@ -184,7 +184,7 @@ class TextDatasetGPU(Dataset):
         self.tokenizer = tokenizer
         self.texts = []
         self.input_ids = []
-        self.token_type_ids = []
+        # self.token_type_ids = []
         self.attention_mask = []
         self.targets = []
         
@@ -205,13 +205,13 @@ class TextDatasetGPU(Dataset):
                 )
                 self.texts.append(text)
                 self.input_ids.append(encoded['input_ids'].squeeze(0))
-                self.token_type_ids.append(encoded['token_type_ids'].squeeze(0))
+                # self.token_type_ids.append(encoded['token_type_ids'].squeeze(0))
                 self.attention_mask.append(encoded['attention_mask'].squeeze(0))
                 self.targets.append(int(category))
 
         # Convert lists to tensors and move to GPU in advance
         self.input_ids = torch.stack(self.input_ids).to(device)
-        self.token_type_ids = torch.stack(self.token_type_ids).to(device)
+        # self.token_type_ids = torch.stack(self.token_type_ids).to(device)
         self.attention_mask = torch.stack(self.attention_mask).to(device)
         self.targets = torch.tensor(self.targets, dtype=torch.long).to(device)
 
@@ -221,7 +221,7 @@ class TextDatasetGPU(Dataset):
     def __getitem__(self, idx):
         return {
             'input_ids': self.input_ids[idx],
-            'token_type_ids': self.token_type_ids[idx],
+            # 'token_type_ids': self.token_type_ids[idx],
             'attention_mask': self.attention_mask[idx],
             'labels': self.targets[idx]
         }
