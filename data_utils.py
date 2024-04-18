@@ -86,7 +86,7 @@ def load_split_files(
     for name, dat in categories.items():
         _id = label2id[name]
         for d in dat:
-            all_lines.append(f"{_id}\t{d}")
+            all_lines.append(f"{_id}\t{d}\t")
     split_save_lines(all_lines, split_ratio, output_dir)
     return id2label
 
