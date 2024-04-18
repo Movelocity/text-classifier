@@ -70,7 +70,7 @@ def load_split_files(
             duplication_map[basename] = []
         duplication_map[basename].append(p)
     
-    label2id = {n:i for i, n in enumerate(duplication_map.keys())}
+    label2id = {n:i for i, n in enumerate(sorted(duplication_map.keys()))}
     id2label = {i:n for i, n in enumerate(label2id.keys())}
 
     #========= read files ==============
