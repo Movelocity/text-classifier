@@ -6,11 +6,10 @@ import typing as tp
 import pandas as pd
 from tqdm import tqdm
 from pathlib import Path
-
+from glob import glob
 import torch
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
-
 
 
 def detect_encoding(filepath):
@@ -18,12 +17,83 @@ def detect_encoding(filepath):
         result = chardet.detect(f.read(10000))  # Read the first 10000 bytes to guess the encoding
     return result['encoding']
 
+def split_save_lines(lines, split_ratio, output_dir, shuffle=True):
+    total_lines = len(lines)
+    print(f"spliting records: {total_lines}")
+    if shuffle:
+        random.shuffle(lines)  # Shuffle the lines in place
+    train_ratio, eval_ratio, test_ratio = split_ratio/np.sum(split_ratio)
+    train_size, eval_size = int(train_ratio * total_lines), int(eval_ratio * total_lines)
+    # test_size 不用算，剩下的就是它的了
+    train_lines, remaining_lines = lines[:train_size], lines[train_size:]
+    eval_lines, test_lines = remaining_lines[:eval_size], remaining_lines[eval_size:]
 
-def load_split_data(
-        input_dir:tp.Union[str, Path], 
-        output_dir:tp.Union[str, Path],
-        split_ratio:list=[8, 1, 1]
-    ):
+    files_map = {
+        output_dir/'train.txt': train_lines,
+        output_dir/'eval.txt': eval_lines,
+        output_dir/'test.txt': test_lines
+    }
+    for filepath, lines in files_map.items():
+        # Write the splits to their respective files
+        with open(filepath, 'w', encoding='utf-8') as file:
+            file.writelines(lines)
+        print(f'write {len(lines)} lines to {filepath}')
+
+def load_split_files(
+    input_dir:str, 
+    output_dir:str = '.',  # 默认将结果保存至当前目录
+    split_ratio:list=[8, 1, 1]
+):
+    """读取目录下多个文件，自动合并重复的标签"""
+    # =========参数验证=============
+    assert len(split_ratio) == 3
+
+    split_ratio = np.array(split_ratio)
+    assert np.all(split_ratio>0)
+
+    if not os.path.isdir(input_dir):
+        raise ValueError(f'无法识别为文件夹: {input_dir}')
+    if not os.path.isdir(output_dir):
+        raise ValueError(f'无法识别为文件夹: {output_dir}')
+    #================================
+    
+    # 读取多个文件并生成标签映射表
+    data_files = glob(f"{input_dir}/*/*.txt")
+
+    duplication_map = {}
+    for p in data_files:
+        # '/kaggle/input/merged-intents/smt95/address.txt'
+        basename = os.path.basename(p).replace('.txt', '') # 'address'
+        if not duplication_map.get(basename):
+            duplication_map[basename] = []
+        duplication_map[basename].append(p)
+    
+    label2id = {n:i for i, n in enumerate(duplication_map.keys())}
+    id2label = {i:n for i, n in enumerate(label2id.keys())}
+
+    #========= read files ==============
+    categories = {n: [] for n in label2id.keys()}
+    for category, category_files in duplication_map.items():
+        # 读取数据文件
+        for input_file in category_files:
+            with open(input_file, 'r', encoding=detect_encoding(input_file)) as file:
+                lines = file.read().strip().split('\n')
+            categories[category].append(lines)
+    
+    all_lines = []
+    for name, dat in categories.items():
+        _id = label2id[name]
+        for d in dat:
+            all_lines.append(f"{_id}\t{d}")
+    split_save_lines(all_lines, split_ratio, output_dir)
+    return id2label
+
+
+def load_split_datafile(
+    input_dir:tp.Union[str, Path], 
+    output_dir:tp.Union[str, Path],
+    split_ratio:list=[8, 1, 1]
+):
     """
     - 数据文件格式: txt
     - 编码: 主流字符编码即可, utf-8, utf-16, gb2312. 切分后统一保存为utf-8
@@ -49,26 +119,8 @@ def load_split_data(
     with open(input_dir, 'r', encoding=detect_encoding(input_dir)) as file:
         lines = file.readlines()
 
-    random.shuffle(lines)  # Shuffle the lines in place
-
     # Calculate the split sizes
-    total_lines = len(lines)
-    train_ratio, eval_ratio, test_ratio = split_ratio/np.sum(split_ratio)
-    train_size, eval_size = int(train_ratio * total_lines), int(eval_ratio * total_lines)
-    # test_size 不用算，剩下的就是它的了
-    train_lines, remaining_lines = lines[:train_size], lines[train_size:]
-    eval_lines, test_lines = remaining_lines[:eval_size], remaining_lines[eval_size:]
-
-    files_map = {
-        output_dir/'train.txt': train_lines,
-        output_dir/'eval.txt': eval_lines,
-        output_dir/'test.txt': test_lines
-    }
-    for filepath, lines in files_map.items():
-        # Write the splits to their respective files
-        with open(filepath, 'w', encoding='utf-8') as file:
-            file.writelines(lines)
-        print(f'write {len(lines)} lines to {filepath}')
+    split_save_lines(lines, split_ratio, output_dir)
 
 def read_csv_labels(
     input_dir: tp.Union[str, Path],
@@ -137,7 +189,10 @@ class TextDatasetGPU(Dataset):
         with open(file_path, 'r', encoding='utf-8') as f:
             for line in tqdm(f.readlines()):
                 category, text = line.strip().split('\t')
-
+                if type(text) is list:
+                    text = ''.join(text)
+                if len(text) == 0:
+                    continue
                 encoded = tokenizer.encode_plus(
                     text, 
                     truncation=True, 
