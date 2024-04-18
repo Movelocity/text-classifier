@@ -77,6 +77,7 @@ def load_split_files(
         # 读取数据文件
         for input_file in category_files:
             with open(input_file, 'r', encoding=detect_encoding(input_file)) as file:
+                print(f'{input_file}')
                 lines = file.read().strip().split('\n')
             categories[category].append(lines)
     
