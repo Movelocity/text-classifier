@@ -13,9 +13,10 @@ from torch.utils.data.dataloader import DataLoader
 
 
 def detect_encoding(filepath):
-    with open(filepath, 'rb') as f:
-        result = chardet.detect(f.read(10000))  # Read the first 10000 bytes to guess the encoding
-    return result['encoding']
+    # with open(filepath, 'rb') as f:
+    #     result = chardet.detect(f.read(10000))  # Read the first 10000 bytes to guess the encoding
+    # return result['encoding']
+    return 'utf-8' # 先简单处理
 
 def split_save_lines(lines, split_ratio, output_dir, shuffle=True):
     total_lines = len(lines)
