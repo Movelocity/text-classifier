@@ -187,18 +187,21 @@ class TextDatasetGPU(Dataset):
         # self.token_type_ids = []
         self.attention_mask = []
         self.targets = []
-        
+        skips = 0
         with open(file_path, 'r', encoding='utf-8') as f:
             for line in tqdm(f.readlines()):
+                # =========== 数据格式检查 ==============
                 cleaned_line = line.strip()
                 if '\t' not in cleaned_line or len(cleaned_line) == 0:
-                    print(f"{file_path}: {cleaned_line}")
+                    skips += 1
                     continue
-                category, text = cleaned_line.split('\t')
-                if type(text) is list:
-                    text = ''.join(text)
+                trunks = cleaned_line.split('\t')
+                category = trunks[0]
+                text = '\t'.join(trunks[1:])
                 if len(text) == 0:
+                    skips += 1
                     continue
+                # =============================
                 encoded = tokenizer.encode_plus(
                     text, 
                     truncation=True, 
@@ -218,6 +221,7 @@ class TextDatasetGPU(Dataset):
         # self.token_type_ids = torch.stack(self.token_type_ids).to(device)
         self.attention_mask = torch.stack(self.attention_mask).to(device)
         self.targets = torch.tensor(self.targets, dtype=torch.long).to(device)
+        print(f'skip records: {skips}')
 
     def __len__(self):
         return len(self.input_ids)
