@@ -29,6 +29,7 @@ def split_save_lines(lines, split_ratio, output_dir, shuffle=True):
     train_lines, remaining_lines = lines[:train_size], lines[train_size:]
     eval_lines, test_lines = remaining_lines[:eval_size], remaining_lines[eval_size:]
 
+    output_dir = Path(output_dir)
     files_map = {
         output_dir/'train.txt': train_lines,
         output_dir/'eval.txt': eval_lines,
@@ -78,9 +79,8 @@ def load_split_files(
         # 读取数据文件
         for input_file in category_files:
             with open(input_file, 'r', encoding=detect_encoding(input_file)) as file:
-                print(f'{input_file}')
                 lines = file.read().strip().split('\n')
-            categories[category].append(lines)
+            categories[category].extend(lines)
     
     all_lines = []
     for name, dat in categories.items():
