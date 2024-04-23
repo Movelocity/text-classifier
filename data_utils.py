@@ -60,7 +60,7 @@ def load_split_files(
     #================================
     
     # 读取多个文件并生成标签映射表
-    data_files = glob(f"{input_dir}/*/*.txt")
+    data_files = glob(f"{input_dir}/*.txt")
 
     duplication_map = {}
     for p in data_files:
