@@ -217,8 +217,7 @@ class TextDatasetGPU(Dataset):
                 self.targets.append(int(category))
 
         # Convert lists to tensors and move to GPU in advance
-        indices = torch.stack(self.input_ids).to(device)
-        self.input_ids = F.one_hot(indices, num_classes=104)  # 累了，先固定这段函数吧
+        self.input_ids = torch.stack(self.input_ids).to(device)
         # self.token_type_ids = torch.stack(self.token_type_ids).to(device)
         self.attention_mask = torch.stack(self.attention_mask).to(device)
         self.targets = torch.tensor(self.targets, dtype=torch.long).to(device)
@@ -232,6 +231,6 @@ class TextDatasetGPU(Dataset):
             'input_ids': self.input_ids[idx],
             # 'token_type_ids': self.token_type_ids[idx],
             'attention_mask': self.attention_mask[idx],
-            'labels': self.targets[idx]
+            'labels': F.one_hot(self.targets[idx], num_classes=104)
         }
 
