@@ -5,7 +5,7 @@ from tqdm import tqdm
 from transformers import get_linear_schedule_with_warmup
 from plot_utils import multiline_plot
 from sklearn.metrics import roc_auc_score
-
+import torch.nn.functional as F
 
 class AUCMetric:
     def __init__(self):
@@ -17,8 +17,9 @@ class AUCMetric:
         self.references = []
 
     def add_batch(self, predictions, references):
+        predictions = F.one_hot(predictions.cpu().detach(), num_classes=104)
         # Ensure predictions are softmax probabilities if needed
-        self.predictions.append(predictions.cpu().detach().numpy())
+        self.predictions.append(predictions.numpy())
         self.references.append(references.cpu().detach().numpy())
 
     def compute(self):
