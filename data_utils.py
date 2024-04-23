@@ -10,7 +10,7 @@ from glob import glob
 import torch
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
-
+import torch.nn.functional as F
 
 def detect_encoding(filepath):
     # with open(filepath, 'rb') as f:
@@ -217,7 +217,8 @@ class TextDatasetGPU(Dataset):
                 self.targets.append(int(category))
 
         # Convert lists to tensors and move to GPU in advance
-        self.input_ids = torch.stack(self.input_ids).to(device)
+        indices = torch.stack(self.input_ids).to(device)
+        self.input_ids = F.one_hot(indices, num_classes=104)  # 累了，先固定这段函数吧
         # self.token_type_ids = torch.stack(self.token_type_ids).to(device)
         self.attention_mask = torch.stack(self.attention_mask).to(device)
         self.targets = torch.tensor(self.targets, dtype=torch.long).to(device)
