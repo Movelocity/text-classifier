@@ -4,6 +4,31 @@ from torch import nn
 from tqdm import tqdm
 from transformers import get_linear_schedule_with_warmup
 from plot_utils import multiline_plot
+from sklearn.metrics import roc_auc_score
+
+
+class AUCMetric:
+    def __init__(self):
+        self.predictions = []
+        self.references = []
+
+    def reset(self):
+        self.predictions = []
+        self.references = []
+
+    def add_batch(self, predictions, references):
+        # Ensure predictions are softmax probabilities if needed
+        self.predictions.append(predictions.cpu().detach().numpy())
+        self.references.append(references.cpu().detach().numpy())
+
+    def compute(self):
+        predictions_np = np.concatenate(self.predictions)
+        references_np = np.concatenate(self.references)
+        
+        auc = roc_auc_score(references_np, predictions_np, multi_class='ovr', average='micro')
+        self.reset()
+        return auc
+
 
 class AccuracyMetric:
     def __init__(self,):
@@ -33,7 +58,7 @@ class Trainer:
         self.device = device
         self.num_epochs = 10
 
-        self.metric = AccuracyMetric()
+        self.metric = AUCMetric()
         self.reset_logs()
 
     def clip_grad_norm(self):
@@ -77,7 +102,7 @@ class Trainer:
             eval_score = self.eval_epoch()
             self.loss_trace.append(epoch_loss)
             self.acc_trace.append(eval_score)
-            print(f"epoch {epoch}: acc: {eval_score}, loss: {epoch_loss}")
+            print(f"epoch {epoch}: auc: {eval_score}, loss: {epoch_loss}")
     
     def plot_history(self):
         multiline_plot(range(len(self.loss_trace)), {

@@ -29,8 +29,8 @@ def calculate_top_n_accuracies(preds, labels, n):
     top_n_preds = preds.topk(n, dim=1).indices  # Get the top-n predictions for each example
     labels = labels.to(preds.device)  # Move labels to the same device as preds
     # Compare with labels and calculate the number of correct predictions
-    correct = top_n_preds.eq(labels.unsqueeze(1).expand_as(top_n_preds)).any(dim=1).sum().item()
-    return correct
+    corrects = top_n_preds.eq(labels.unsqueeze(1).expand_as(top_n_preds)).any(dim=1).sum().item()
+    return corrects
 
 
 def eval_as_table(model, tokenizer, dataloader, id2label):
