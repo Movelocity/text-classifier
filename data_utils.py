@@ -231,6 +231,6 @@ class TextDatasetGPU(Dataset):
             'input_ids': self.input_ids[idx],
             # 'token_type_ids': self.token_type_ids[idx],
             'attention_mask': self.attention_mask[idx],
-            'labels': F.one_hot(self.targets[idx], num_classes=104)
+            'labels': F.one_hot(self.targets[idx], num_classes=104).to(torch.float32)
         }
 
