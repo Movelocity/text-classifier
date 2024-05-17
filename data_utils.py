@@ -41,6 +41,11 @@ def split_save_lines(lines, split_ratio, output_dir, shuffle=True):
             file.writelines(lines)
         print(f'write {len(lines)} lines to {filepath}')
 
+def strip_right(text, char):
+    while text.endswith(char):
+        text = text[:-1]
+    return text
+
 def load_split_files(
     input_dir:str, 
     output_dir:str = '.',  # 默认将结果保存至当前目录
@@ -52,8 +57,8 @@ def load_split_files(
 
     split_ratio = np.array(split_ratio)
     assert np.all(split_ratio>0)
-    input_dir = input_dir.strip('/')
-    output_dir = output_dir.strip('/')
+    input_dir = strip_right(input_dir, '/')
+    output_dir = strip_right(output_dir, '/')
     if not os.path.isdir(input_dir):
         raise ValueError(f'无法识别为文件夹: {input_dir}')
     if not os.path.isdir(output_dir):
@@ -61,7 +66,7 @@ def load_split_files(
     #================================
     
     # 读取多个文件并生成标签映射表
-    data_files = glob(f"{input_dir}**/*.txt", recursive=True)
+    data_files = glob(f"{input_dir}/**/*.txt", recursive=True)
 
     duplication_map = {}  # 同一个意图可以有多个文件
     for p in data_files:
