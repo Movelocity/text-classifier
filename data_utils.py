@@ -62,7 +62,7 @@ def load_split_files(
     # 读取多个文件并生成标签映射表
     data_files = glob(f"../**/*.txt", recursive=True)
 
-    duplication_map = {}
+    duplication_map = {}  # 同一个意图可以有多个文件
     for p in data_files:
         # '/kaggle/input/merged-intents/smt95/address.txt'
         basename = os.path.basename(p).replace('.txt', '') # 'address'
@@ -232,5 +232,6 @@ class TextDatasetGPU(Dataset):
             # 'token_type_ids': self.token_type_ids[idx],
             'attention_mask': self.attention_mask[idx],
             'labels': F.one_hot(self.targets[idx], num_classes=104).to(torch.float32)
+            # TODO: 需要构造 multihot 而不是 onehot
         }
 
