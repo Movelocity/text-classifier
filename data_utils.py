@@ -60,7 +60,7 @@ def load_split_files(
     #================================
     
     # 读取多个文件并生成标签映射表
-    data_files = glob(f"{input_dir}/*.txt")
+    data_files = glob(f"../**/*.txt", recursive=True)
 
     duplication_map = {}
     for p in data_files:
@@ -86,7 +86,7 @@ def load_split_files(
     for name, dat in categories.items():
         _id = label2id[name]
         for d in dat:
-            all_lines.append(f"{_id}\t{d}\n")
+            all_lines.append(f"{_id}\t{d}\n")  # 用 \t 分隔序号和名称
     split_save_lines(all_lines, split_ratio, output_dir)
     return id2label
 
