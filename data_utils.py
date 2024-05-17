@@ -186,7 +186,7 @@ class NormalDataset(Dataset):
 
 
 class TextDatasetGPU(Dataset):
-    def __init__(self, file_path, tokenizer, device:torch.device, max_length=256):
+    def __init__(self, file_path, tokenizer, device:torch.device, max_length=256, num_classes=0):
         self.tokenizer = tokenizer
         self.texts = []
         self.input_ids = []
@@ -194,6 +194,7 @@ class TextDatasetGPU(Dataset):
         self.attention_mask = []
         self.targets = []
         skips = 0
+        self.num_classes = num_classes
         with open(file_path, 'r', encoding='utf-8') as f:
             for line in tqdm(f.readlines()):
                 # =========== 数据格式检查 ==============
@@ -237,7 +238,7 @@ class TextDatasetGPU(Dataset):
             'input_ids': self.input_ids[idx],
             # 'token_type_ids': self.token_type_ids[idx],
             'attention_mask': self.attention_mask[idx],
-            'labels': F.one_hot(self.targets[idx], num_classes=104).to(torch.float32)
+            'labels': F.one_hot(self.targets[idx], num_classes=self.num_classes).to(torch.float32)
             # TODO: 需要构造 multihot 而不是 onehot
         }
 
