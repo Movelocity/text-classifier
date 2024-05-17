@@ -17,7 +17,7 @@ class AUCMetric:
         self.references = []
 
     def add_batch(self, predictions, references):
-        predictions = F.one_hot(predictions.cpu().detach(), num_classes=104)
+        predictions = F.one_hot(predictions.cpu().detach(), num_classes=115)
         # Ensure predictions are softmax probabilities if needed
         self.predictions.append(predictions.numpy())
         self.references.append(references.cpu().detach().numpy())
