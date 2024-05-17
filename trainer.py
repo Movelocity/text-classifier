@@ -108,7 +108,7 @@ class Trainer:
     def plot_history(self):
         multiline_plot(range(len(self.loss_trace)), {
             "loss": self.loss_trace,
-            "accuracy": self.acc_trace
+            "auc": self.acc_trace
         }, title='training history', xlabel='epoch')
 
     def reset_logs(self):
