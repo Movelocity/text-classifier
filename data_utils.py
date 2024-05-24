@@ -87,12 +87,22 @@ def load_split_files(
             with open(input_file, 'r', encoding=detect_encoding(input_file)) as file:
                 lines = file.read().strip().split('\n')
             categories[category].extend(lines)
-    
+
+    # 根据文本重复出现的类别构造多分类标签
+    # Build reverse lookup dictionary
+    text_to_labels = {}
+    for name, texts in categories.items():
+        label_id = label2id[name]
+        for text in texts:
+            if text not in text_to_labels:
+                text_to_labels[text] = []
+            text_to_labels[text].append(label_id)
+
+    # Build all_lines with new format
     all_lines = []
-    for name, dat in categories.items():
-        _id = label2id[name]
-        for d in dat:
-            all_lines.append(f"{_id}\t{d}\n")  # 用 \t 分隔序号和名称
+    for text, label_ids in text_to_labels.items():
+        label_ids_str = ",".join(map(str, label_ids))
+        all_lines.append(f"{label_ids_str}|{text}\n")  # 用 \t 分隔序号和名称
     split_save_lines(all_lines, split_ratio, output_dir)
     return id2label
 
@@ -104,7 +114,7 @@ def load_split_datafile(
 ):
     """
     - 数据文件格式: txt
-    - 编码: 主流字符编码即可, utf-8, utf-16, gb2312. 切分后统一保存为utf-8
+    - 编码: 主流字符编码即可, utf-8, utf-16, gb2312. 切分后统一保存为 utf-8
     - 文档格式:
         `整数标签\\t文本`，一行一条数据
     - 请自己决定数据集 label 的加载方式
@@ -146,7 +156,6 @@ class NormalDataset(Dataset):
         self.tokenizer = tokenizer
         self.texts = []
         self.input_ids = []
-        # self.token_type_ids = []
         self.attention_mask = []
         self.targets = []
         self.device = device
@@ -164,12 +173,10 @@ class NormalDataset(Dataset):
                 )
                 self.texts.append(text)
                 self.input_ids.append(encoded['input_ids'].squeeze(0))
-                # self.token_type_ids.append(encoded['token_type_ids'].squeeze(0))
                 self.attention_mask.append(encoded['attention_mask'].squeeze(0))
                 self.targets.append(int(category))
 
         self.input_ids = torch.stack(self.input_ids)
-        # self.token_type_ids = torch.stack(self.token_type_ids)
         self.attention_mask = torch.stack(self.attention_mask)
         self.targets = torch.tensor(self.targets, dtype=torch.long)
 
@@ -179,7 +186,6 @@ class NormalDataset(Dataset):
     def __getitem__(self, idx):
         return {
             'input_ids': self.input_ids[idx].to(self.device),
-            # 'token_type_ids': self.token_type_ids[idx].to(self.device),
             'attention_mask': self.attention_mask[idx].to(self.device),
             'labels': self.targets[idx].to(self.device)
         }
@@ -194,20 +200,24 @@ class TextDatasetGPU(Dataset):
         self.attention_mask = []
         self.targets = []
         skips = 0
+        multi_label_cnt = 0
         self.num_classes = num_classes
         with open(file_path, 'r', encoding='utf-8') as f:
             for line in tqdm(f.readlines()):
                 # =========== 数据格式检查 ==============
                 cleaned_line = line.strip()
-                if '\t' not in cleaned_line or len(cleaned_line) == 0:
+                if '|' not in cleaned_line or len(cleaned_line) == 0:
                     skips += 1
                     continue
-                trunks = cleaned_line.split('\t')
-                category = trunks[0]
-                text = '\t'.join(trunks[1:])
+                categories, *texts = cleaned_line.split('|')
+                categories = list(map(int, categories.split(',')))
+                text = '|'.join(texts)
                 if len(text) == 0:
                     skips += 1
                     continue
+                if len(categories) > 1:
+                    multi_label_cnt += 1
+
                 # =============================
                 encoded = tokenizer.encode_plus(
                     text, 
@@ -219,24 +229,27 @@ class TextDatasetGPU(Dataset):
                 )
                 self.texts.append(text)
                 self.input_ids.append(encoded['input_ids'].squeeze(0))
-                # self.token_type_ids.append(encoded['token_type_ids'].squeeze(0))
                 self.attention_mask.append(encoded['attention_mask'].squeeze(0))
-                self.targets.append(int(category))
+                self.targets.append(categories)
 
         # Convert lists to tensors and move to GPU in advance
         self.input_ids = torch.stack(self.input_ids).to(device)
-        # self.token_type_ids = torch.stack(self.token_type_ids).to(device)
         self.attention_mask = torch.stack(self.attention_mask).to(device)
         self.targets = torch.tensor(self.targets, dtype=torch.long).to(device)
+        self.device = device
         print(f'skip records: {skips}')
+        print(f'multi_label_cnt: {multi_label_cnt}')
 
     def __len__(self):
         return len(self.input_ids)
 
     def __getitem__(self, idx):
+        categories = self.targets[idx]
+        multi_hot = torch.zeros(self.num_classes, dtype=torch.float32).to(self.device)
+        for cat in categories:
+            multi_hot[cat] = 1
         return {
             'input_ids': self.input_ids[idx],
-            # 'token_type_ids': self.token_type_ids[idx],
             'attention_mask': self.attention_mask[idx],
             'labels': F.one_hot(self.targets[idx], num_classes=self.num_classes).to(torch.float32)
             # TODO: 需要构造 multihot 而不是 onehot
