@@ -250,7 +250,7 @@ class TextDatasetGPU(Dataset):
         return {
             'input_ids': self.input_ids[idx],
             'attention_mask': self.attention_mask[idx],
-            'labels': F.one_hot(self.targets[idx], num_classes=self.num_classes).to(torch.float32)
+            'labels': multi_hot
             # TODO: 需要构造 multihot 而不是 onehot
         }
 
