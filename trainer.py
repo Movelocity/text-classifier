@@ -8,7 +8,7 @@ from sklearn.metrics import roc_auc_score
 import torch.nn.functional as F
 import shared
 
-print(f"detect classes {shared.num_classes}")
+# print(f"detect classes {shared.num_classes}")
 
 class AUCMetric:
     def __init__(self):
