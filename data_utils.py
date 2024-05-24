@@ -235,7 +235,6 @@ class TextDatasetGPU(Dataset):
         # Convert lists to tensors and move to GPU in advance
         self.input_ids = torch.stack(self.input_ids).to(device)
         self.attention_mask = torch.stack(self.attention_mask).to(device)
-        self.targets = torch.tensor(self.targets, dtype=torch.long).to(device)
         self.device = device
         print(f'skip records: {skips}')
         print(f'multi_label_cnt: {multi_label_cnt}')
