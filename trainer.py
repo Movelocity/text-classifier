@@ -6,6 +6,9 @@ from transformers import get_linear_schedule_with_warmup
 from plot_utils import multiline_plot
 from sklearn.metrics import roc_auc_score
 import torch.nn.functional as F
+import shared
+
+print(f"detect classes {shared.num_classes}")
 
 class AUCMetric:
     def __init__(self):
@@ -17,10 +20,9 @@ class AUCMetric:
         self.references = []
 
     def add_batch(self, predictions, references):
-        predictions = F.one_hot(predictions.cpu().detach(), num_classes=115)
         # Ensure predictions are softmax probabilities if needed
-        self.predictions.append(predictions.numpy())
-        self.references.append(references.cpu().detach().numpy())
+        self.predictions.append(predictions.detach().cpu().numpy())
+        self.references.append(references.detach().cpu().numpy())
 
     def compute(self):
         predictions_np = np.concatenate(self.predictions)
@@ -30,24 +32,22 @@ class AUCMetric:
         self.reset()
         return auc
 
+# class AccuracyMetric:
+#     def __init__(self,):
+#         self.reset()
 
-class AccuracyMetric:
-    def __init__(self,):
-        self.reset()
+#     def reset(self):
+#         self.matches = 0
+#         self.total_samples = 0
 
-    def reset(self):
-        self.matches = 0
-        self.total_samples = 0
-
-    def add_batch(self, predictions, references):
-        self.matches += torch.eq(predictions, references).sum().item()
-        self.total_samples += references.size(0)
+#     def add_batch(self, predictions, references):
+#         self.matches += torch.eq(predictions, references).sum().item()
+#         self.total_samples += references.size(0)
     
-    def compute(self):
-        result = self.matches/self.total_samples
-        self.reset()
-        return result
-
+#     def compute(self):
+#         result = self.matches/self.total_samples
+#         self.reset()
+#         return result
 
 class Trainer:
     def __init__(self, model, optimizer, train_loader, eval_loader, device):
@@ -89,11 +89,9 @@ class Trainer:
                     # 'token_type_ids': batch['token_type_ids']
                 }
                 outputs = self.model(**model_kwargs)
-            predictions = outputs.logits.argmax(dim=-1)
-            predictions, references = predictions, batch["labels"]
             self.metric.add_batch(
-                predictions=predictions,
-                references=references,
+                predictions=outputs.logits.sigmoid(),
+                references=batch["labels"],
             )
         return self.metric.compute()
 

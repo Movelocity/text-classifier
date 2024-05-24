@@ -11,6 +11,8 @@ import torch
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
 import torch.nn.functional as F
+import shared
+
 
 def detect_encoding(filepath):
     # with open(filepath, 'rb') as f:
@@ -78,6 +80,7 @@ def load_split_files(
     
     label2id = {n:i for i, n in enumerate(sorted(duplication_map.keys()))}
     id2label = {i:n for i, n in enumerate(label2id.keys())}
+    shared.num_classes = len(id2label.keys())
 
     #========= read files ==============
     categories = {n: [] for n in label2id.keys()}
