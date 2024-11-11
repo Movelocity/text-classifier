@@ -3,7 +3,8 @@ import numpy as np
 from torch import nn
 from tqdm import tqdm
 from transformers import get_linear_schedule_with_warmup
-from plot_utils import multiline_plot
+# from plot_utils import multiline_plot
+import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score
 import torch.nn.functional as F
 import shared
@@ -104,10 +105,29 @@ class Trainer:
             print(f"epoch {epoch}: auc: {eval_score}, loss: {epoch_loss}")
     
     def plot_history(self):
-        multiline_plot(range(len(self.loss_trace)), {
-            "loss": self.loss_trace,
-            "auc": self.acc_trace
-        }, title='training history', xlabel='epoch')
+        xs = range(len(self.loss_trace))
+        # Create a figure with two subplots in a row
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+        
+        # Plot loss on the first subplot
+        ax1.plot(xs, self.loss_trace, color='blue', label='Loss')
+        ax1.set_title('Loss over Epochs')
+        ax1.set_xlabel('Epoch')
+        ax1.set_ylabel('Loss')
+        ax1.legend()
+        ax1.grid(True)
+
+        # Plot AUC on the second subplot
+        ax2.plot(xs, self.acc_trace, color='orange', label='AUC')
+        ax2.set_title('AUC over Epochs')
+        ax2.set_xlabel('Epoch')
+        ax2.set_ylabel('AUC')
+        ax2.legend()
+        ax2.grid(True)
+
+        # Adjust layout
+        plt.tight_layout()
+        plt.show()
 
     def reset_logs(self):
         self.step = 0

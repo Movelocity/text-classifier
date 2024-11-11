@@ -44,13 +44,14 @@ def split_save_lines(lines, split_ratio, output_dir, shuffle=True):
         print(f'write {len(lines)} lines to {filepath}')
 
 def strip_right(text, char):
+    """删除右侧指定字符"""
     while text.endswith(char):
         text = text[:-1]
     return text
 
 def load_split_files(
     input_dir:str, 
-    output_dir:str = '.',  # 默认将结果保存至当前目录
+    output_dir:str = 'dataset',  # 默认将结果保存至当前目录
     split_ratio:list=[8, 1, 1]
 ):
     """读取目录下多个文件，自动合并重复的标签"""
@@ -61,6 +62,7 @@ def load_split_files(
     assert np.all(split_ratio>0)
     input_dir = strip_right(input_dir, '/')
     output_dir = strip_right(output_dir, '/')
+    os.makedirs(output_dir, exist_ok=True)
     if not os.path.isdir(input_dir):
         raise ValueError(f'无法识别为文件夹: {input_dir}')
     if not os.path.isdir(output_dir):

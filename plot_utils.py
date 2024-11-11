@@ -48,3 +48,14 @@ def multiline_plot(xs, ys:dict, figsize=(6, 4), title='', xlabel='', ylabel='', 
     if save_name and save_name[-4:] in ['.jpg', '.png']:
         plt.savefit(save_name)
     plt.show()
+
+def show_in_scroll_area(content: str, height: int=10):
+    """将内容显示在滚动区域中"""
+    from IPython.display import display, HTML
+    html_content = f"""
+    <div style="max-height: {height}em; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+    <pre>{content}</pre>
+    </div>
+    """
+    display(HTML(html_content))
+
