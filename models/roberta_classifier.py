@@ -1,4 +1,5 @@
 import torch
+import zipfile
 from peft import PeftModel
 from transformers import RobertaForSequenceClassification, RobertaTokenizer
 import numpy as np 
@@ -21,9 +22,18 @@ def remap_labels(name2conf:dict, hidden_labels:list, target_label:str):
         name2conf[target_label] = highest_confidence
 
 class Roberta_Model:
-    def __init__(self, base_dir, lora_name, device):
-        peft_dir = os.path.join(base_dir, lora_name)
+    def __init__(self, base_dir, lora_name=None, lora_path=None, device:torch.device="cpu"):
+        if lora_path is None and lora_name is None:
+            raise ValueError('请提供其中一个参数：lora_name lora_path')
+        if lora_path is not None:
+            peft_dir = lora_path
+        else:
+            peft_dir = os.path.join(base_dir, lora_name)
         print(f"load lora model: {peft_dir}")
+
+        # Unzip if peft_dir is a zip file
+        if peft_dir.endswith('.zip'):
+            peft_dir = self._unzip_model(peft_dir)
 
         # Open the YAML file
         self.id2label = {}
@@ -44,6 +54,7 @@ class Roberta_Model:
                 self.hide_sub_labels = label_config.get('hide_sub_labels', {})
         else:
             raise ValueError(f'未发现标签配置文件: {label_config_dir}')
+
         inference_model = RobertaForSequenceClassification.from_pretrained(
             base_dir, num_labels=len(self.id2label.keys())).to(device).eval()
         inference_model.config.problem_type = "multi_label_classification"
@@ -72,6 +83,29 @@ class Roberta_Model:
             remap_labels(result_dict, hidden_labels=value, target_label=key)
 
         return result_dict
+    
+    def _unzip_model(self, zip_path):
+        """Unzips the specified zip file into a temporary directory."""
+        temp_dir = os.path.join(os.getcwd(), '.temp')
+        
+        # Create temp directory if it doesn't exist
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
+        else:
+            # Clear existing contents
+            for filename in os.listdir(temp_dir):
+                file_path = os.path.join(temp_dir, filename)
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+                elif os.path.isdir(file_path):
+                    os.rmdir(file_path)
+
+        # Unzip the file
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(temp_dir)
+
+        print(f'Unzipped model to `{temp_dir}`')
+        return temp_dir
 
 
 def load_model(base_dir, lora_name, device=None):
