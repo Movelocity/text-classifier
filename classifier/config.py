@@ -20,6 +20,7 @@ class TrainingConfig:
     max_length: int = 256
     shuffle_train: bool = True
     random_seed: int = 42
+    max_samples: Optional[int] = None  # 最大样本数量限制（用于小规模测试）
     
     # 模型相关参数
     model_name: str = "roberta-base"

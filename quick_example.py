@@ -21,7 +21,7 @@ def main():
         print("\n🎯 方法1: 超快速训练")
         print("-" * 30)
         
-        # 这将进行小规模快速训练，适合测试
+        # 这将进行小规模快速训练，适合测试（数据量限制在1万条以内）
         print("开始快速训练（测试模式）...")
         best_model_path, run_dir = quick_train(
             batch_size=4,
@@ -105,7 +105,7 @@ def demo_config_only():
         
         # 预设配置
         print("\n3. 预设配置:")
-        config.small_test()  # 小规模测试
+        config.small_test()  # 小规模测试（自动限制1万条数据）
         # config.production_setup()  # 生产环境
         
         # LoRA配置
@@ -116,24 +116,71 @@ def demo_config_only():
         print("\n5. 数据分割:")
         config.set_data_split(train=0.8, valid=0.1, test=0.1)
         
+        # 数据量限制演示
+        print("\n6. 数据量限制:")
+        config.set_max_samples(5000)  # 限制为5千条
+        config.set_max_samples(10000)  # 限制为1万条
+        config.set_max_samples(None)   # 移除限制
+        
         print("\n✅ 所有配置演示完成!")
         
     except ImportError:
         print("❌ 配置模块导入失败")
 
 
+def demo_data_limits():
+    """演示不同数据量限制的训练"""
+    print("📊 数据量限制训练演示")
+    print("=" * 40)
+    
+    try:
+        from classifier.notebook_utils import create_config, train
+        
+        print("演示不同数据量限制的配置:")
+        
+        # 1. 超小规模测试（1000条）
+        print("\n1. 超小规模测试（1000条）:")
+        config1 = create_config()
+        config1.small_test().set_max_samples(1000).cpu_mode()
+        
+        # 2. 小规模测试（5000条）
+        print("\n2. 小规模测试（5000条）:")
+        config2 = create_config()
+        config2.quick_setup(batch_size=8, num_epochs=3).set_max_samples(5000).auto_mode()
+        
+        # 3. 中等规模测试（10000条）
+        print("\n3. 中等规模测试（10000条）:")
+        config3 = create_config()
+        config3.quick_setup(batch_size=16, num_epochs=5).set_max_samples(10000).auto_mode()
+        
+        print("\n💡 提示:")
+        print("- 使用 config.set_max_samples(数量) 来限制数据量")
+        print("- 使用 config.small_test() 自动设置1万条限制")
+        print("- 使用 config.set_max_samples(None) 移除限制")
+        print("- 训练时会优先随机采样指定数量的数据")
+        
+        print("\n🚀 如需实际训练，请调用:")
+        print("   best_model, run_dir = train(config)")
+        
+    except ImportError as e:
+        print(f"❌ 导入错误: {e}")
+
+
 if __name__ == "__main__":
     print("选择运行模式:")
     print("1. 完整示例（包含训练）")
     print("2. 仅配置演示")
+    print("3. 数据量限制演示")
     
     try:
-        choice = input("请输入选择 (1 或 2): ").strip()
+        choice = input("请输入选择 (1/2/3): ").strip()
         
         if choice == "1":
             main()
         elif choice == "2":
             demo_config_only()
+        elif choice == "3":
+            demo_data_limits()
         else:
             print("运行完整示例...")
             main()

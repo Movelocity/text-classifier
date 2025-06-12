@@ -75,7 +75,8 @@ class SQLiteDatasetLoader:
         return label2id
     
     def load_data_split(self, split_ratio: List[float] = [0.8, 0.1, 0.1], 
-                       shuffle: bool = True, random_seed: int = 42) -> Tuple[List, List, List]:
+                       shuffle: bool = True, random_seed: int = 42, 
+                       max_samples: Optional[int] = None) -> Tuple[List, List, List]:
         """
         从SQLite加载数据并按比例分割为训练、验证、测试集
         
@@ -83,6 +84,7 @@ class SQLiteDatasetLoader:
             split_ratio: 分割比例 [train, valid, test]
             shuffle: 是否随机打乱数据
             random_seed: 随机种子
+            max_samples: 最大样本数量，用于限制数据规模（None表示不限制）
             
         Returns:
             (train_data, valid_data, test_data) 三个数据集的列表
@@ -108,8 +110,16 @@ class SQLiteDatasetLoader:
                 'labels': item.labels
             })
         
-        # 随机打乱数据
-        if shuffle:
+        # 限制数据量（在随机打乱之前）
+        if max_samples is not None and len(data_list) > max_samples:
+            if shuffle:
+                np.random.seed(random_seed)
+                np.random.shuffle(data_list)
+            data_list = data_list[:max_samples]
+            print(f"⚠️  数据量已限制为 {max_samples} 条（原有 {len(labeled_data)} 条）")
+        
+        # 再次随机打乱数据（如果之前没有打乱）
+        if shuffle and (max_samples is None or len(labeled_data) <= max_samples):
             np.random.seed(random_seed)
             np.random.shuffle(data_list)
         
@@ -233,7 +243,8 @@ def create_data_loaders(split_ratio: List[float] = [0.8, 0.1, 0.1],
                        device: torch.device = None,
                        max_length: int = 256,
                        shuffle_train: bool = True,
-                       random_seed: int = 42) -> Tuple:
+                       random_seed: int = 42,
+                       max_samples: Optional[int] = None) -> Tuple:
     """
     创建训练、验证、测试数据加载器
     
@@ -245,6 +256,7 @@ def create_data_loaders(split_ratio: List[float] = [0.8, 0.1, 0.1],
         max_length: 最大序列长度
         shuffle_train: 是否打乱训练数据
         random_seed: 随机种子
+        max_samples: 最大样本数量，用于限制数据规模（None表示不限制）
         
     Returns:
         (train_loader, valid_loader, test_loader, label2id, id2label)
@@ -263,7 +275,8 @@ def create_data_loaders(split_ratio: List[float] = [0.8, 0.1, 0.1],
         train_data, valid_data, test_data = loader.load_data_split(
             split_ratio=split_ratio,
             shuffle=True,
-            random_seed=random_seed
+            random_seed=random_seed,
+            max_samples=max_samples
         )
         
         # 创建数据集

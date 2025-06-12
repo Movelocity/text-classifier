@@ -36,6 +36,10 @@ class NotebookTrainingConfig:
         """显示当前配置"""
         print("🔧 当前训练配置:")
         print(f"  📊 数据分割: {self.config.data_split_ratio}")
+        if self.config.max_samples is not None:
+            print(f"  📝 数据量限制: {self.config.max_samples:,} 条")
+        else:
+            print(f"  📝 数据量限制: 无限制")
         print(f"  📦 批次大小: {self.config.batch_size}")
         print(f"  📏 最大长度: {self.config.max_length}")
         print(f"  🤖 模型名称: {self.config.model_name}")
@@ -44,12 +48,14 @@ class NotebookTrainingConfig:
         print(f"  📈 学习率: {self.config.learning_rate}")
         print(f"  💾 保存目录: {self.config.save_dir}")
     
-    def quick_setup(self, 
-                   batch_size: int = 16,
-                   num_epochs: int = 12,
-                   learning_rate: float = 2e-4,
-                   max_length: int = 256,
-                   use_lora: bool = True):
+    def quick_setup(
+        self, 
+        batch_size: int = 16,
+        num_epochs: int = 12,
+        learning_rate: float = 2e-4,
+        max_length: int = 256,
+        use_lora: bool = True
+    ):
         """
         快速设置常用参数
         
@@ -91,6 +97,20 @@ class NotebookTrainingConfig:
         print(f"✅ 数据分割: 训练={train}, 验证={valid}, 测试={test}")
         return self
     
+    def set_max_samples(self, max_samples: Optional[int]):
+        """
+        设置最大样本数量限制
+        
+        Args:
+            max_samples: 最大样本数量，None表示不限制
+        """
+        self.config.max_samples = max_samples
+        if max_samples is None:
+            print("✅ 数据量限制已移除")
+        else:
+            print(f"✅ 数据量限制设为: {max_samples:,} 条")
+        return self
+    
     def set_save_dir(self, save_dir: str):
         """设置保存目录"""
         self.config.save_dir = save_dir
@@ -124,7 +144,8 @@ class NotebookTrainingConfig:
         self.config.save_steps = 50
         self.config.eval_steps = 50
         self.config.logging_steps = 10
-        print("🧪 已设置为小规模测试模式")
+        self.config.max_samples = 10000  # 限制数据量为1万条
+        print("🧪 已设置为小规模测试模式（数据量限制：10,000条）")
         self._display_config()
         return self
     
@@ -237,7 +258,8 @@ def start_training(config: NotebookTrainingConfig, verbose: bool = True) -> Tupl
             device=device,
             max_length=train_config.max_length,
             shuffle_train=train_config.shuffle_train,
-            random_seed=train_config.random_seed
+            random_seed=train_config.random_seed,
+            max_samples=train_config.max_samples
         )
         
         # 更新配置中的标签数量
@@ -296,11 +318,14 @@ def start_training(config: NotebookTrainingConfig, verbose: bool = True) -> Tupl
         raise
 
 
-def quick_train(batch_size: int = 16, 
-                num_epochs: int = 12, 
-                learning_rate: float = 2e-4,
-                use_lora: bool = True,
-                test_mode: bool = False) -> Tuple[str, str]:
+def quick_train(
+    batch_size: int = 16, 
+    num_epochs: int = 12, 
+    learning_rate: float = 2e-4,
+    use_lora: bool = True,
+    test_mode: bool = False,
+    **kwargs
+) -> Tuple[str, str]:
     """
     快速训练函数（一行代码启动训练）
     
