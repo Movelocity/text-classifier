@@ -1,0 +1,67 @@
+# demo.py 参数配置文件
+# 该配置文件精确匹配 reference/demo.py 中的所有训练参数
+# 使用方法: python main.py --config demo_config.yaml
+
+# 数据相关配置
+data_split_ratio: [0.8, 0.1, 0.1]  # 数据分割比例，与 demo.py 相同
+batch_size: 24                     # 匹配 demo.py 中 train_loader 的 batch_size=24
+max_length: 256                    # 序列最大长度
+shuffle_train: true                # 训练数据打乱
+random_seed: 42                    # 随机种子
+
+# 模型相关配置
+model_name: "roberta-base"         # 匹配 demo.py 中的 'roberta-base'
+problem_type: "multi_label_classification"  # 匹配 demo.py 中的多标签分类设置
+
+# LoRA微调配置（精确匹配 demo.py）
+use_lora: true                     # 启用LoRA，匹配 demo.py
+lora_r: 48                         # 匹配 demo.py 中 r=48
+lora_alpha: 24                     # 匹配 demo.py 中 lora_alpha=24  
+lora_dropout: 0.3                  # 匹配 demo.py 中 lora_dropout=0.3
+
+# 训练相关配置（精确匹配 demo.py）
+num_epochs: 12                     # 匹配 demo.py 中 trainer.train(12)
+learning_rate: 0.0002              # 匹配 demo.py 中 lr=2e-4
+weight_decay: 0.01                 # 权重衰减
+warmup_ratio: 0.06                 # 预热比例
+gradient_accumulation_steps: 4     # 梯度累积
+max_grad_norm: 1.1                 # 梯度裁剪
+
+# 注意：demo.py 中的优化器配置 eps=1e-8 在 TrainingConfig 类中已默认设置
+
+# 评估和保存配置
+save_dir: "models"                 # 模型保存目录
+save_steps: 500                    # 保存间隔
+eval_steps: 500                    # 评估间隔
+logging_steps: 100                 # 日志间隔
+save_total_limit: 3                # 最大保存数量
+
+# 设备配置
+device: "auto"                     # 自动选择设备
+
+# 数据加载配置
+dataloader_num_workers: 0          # 数据加载进程数
+
+# 参数对照说明:
+# ┌─────────────────────┬─────────────────────┬─────────────────────┐
+# │ 参数                │ demo.py 中的值      │ 该配置文件中的值    │
+# ├─────────────────────┼─────────────────────┼─────────────────────┤
+# │ LoRA r              │ r=48                │ lora_r: 48          │
+# │ LoRA alpha          │ lora_alpha=24       │ lora_alpha: 24      │
+# │ LoRA dropout        │ lora_dropout=0.3    │ lora_dropout: 0.3   │
+# │ 批次大小            │ batch_size=24       │ batch_size: 24      │
+# │ 学习率              │ lr=2e-4             │ learning_rate: 0.0002│
+# │ 训练轮数            │ trainer.train(12)   │ num_epochs: 12      │
+# │ 优化器类型          │ AdamW(eps=1e-8)     │ 默认已配置          │
+# │ 模型名称            │ 'roberta-base'      │ model_name: "roberta-base"│
+# │ 问题类型            │ multi_label_classification│ problem_type: "multi_label_classification"│
+# └─────────────────────┴─────────────────────┴─────────────────────┘
+
+# 使用说明:
+# 1. 命令行使用: python main.py --config demo_config.yaml
+# 2. 在 quick_example.py 中使用:
+#    from classifier.notebook_utils import create_config, train
+#    config = create_config()
+#    config.quick_setup(batch_size=24, num_epochs=12, learning_rate=2e-4)
+#    config.set_lora_config(r=48, alpha=24, dropout=0.3)
+#    best_model, run_dir = train(config) 

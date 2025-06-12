@@ -24,9 +24,9 @@ def main():
         # 这将进行小规模快速训练，适合测试（数据量限制在1万条以内）
         print("开始快速训练（测试模式）...")
         best_model_path, run_dir = quick_train(
-            batch_size=4,
-            num_epochs=1,
-            learning_rate=2e-4,
+            batch_size=24,      # 匹配 demo.py 的 batch_size
+            num_epochs=12,      # 匹配 demo.py 的训练轮数
+            learning_rate=2e-4, # 匹配 demo.py 的学习率
             use_lora=True,
             test_mode=True
         )
@@ -166,14 +166,119 @@ def demo_data_limits():
         print(f"❌ 导入错误: {e}")
 
 
+def demo_match_demo_py():
+    """演示如何完全匹配 demo.py 中的训练参数配置"""
+    print("🎯 匹配 demo.py 的参数配置")
+    print("=" * 50)
+    
+    try:
+        from classifier.notebook_utils import create_config, train
+        
+        print("📋 demo.py 中的参数配置:")
+        print("  LoRA:")
+        print("    - r: 48")
+        print("    - alpha: 24") 
+        print("    - dropout: 0.3")
+        print("  训练:")
+        print("    - batch_size: 24")
+        print("    - learning_rate: 2e-4")
+        print("    - epochs: 12")
+        print("    - optimizer: AdamW(eps=1e-8)")
+        
+        print("\n🔧 在 quick_example.py 中的配置方法:")
+        
+        # 方法1: 使用 quick_train 直接配置
+        print("\n💡 方法1: 使用 quick_train")
+        print("```python")
+        print("best_model, run_dir = quick_train(")
+        print("    batch_size=24,      # 匹配 demo.py")
+        print("    num_epochs=12,      # 匹配 demo.py")
+        print("    learning_rate=2e-4, # 匹配 demo.py")
+        print("    use_lora=True,")
+        print("    test_mode=False     # 生产模式")
+        print(")")
+        print("```")
+        
+        # 方法2: 使用配置类详细配置
+        print("\n💡 方法2: 使用配置类详细配置")
+        print("```python")
+        config = create_config()
+        
+        # 基础训练参数（匹配 demo.py）
+        config.quick_setup(
+            batch_size=24,      # demo.py 中的 batch_size
+            num_epochs=12,      # demo.py 中的 trainer.train(12)
+            learning_rate=2e-4, # demo.py 中的 lr=2e-4
+            use_lora=True
+        )
+        
+        # LoRA参数（完全匹配 demo.py）
+        config.set_lora_config(
+            r=48,               # demo.py 中的 r=48
+            alpha=24,           # demo.py 中的 lora_alpha=24
+            dropout=0.3         # demo.py 中的 lora_dropout=0.3
+        )
+        
+        # 设备配置
+        config.auto_mode()      # 自动选择设备
+        
+        print("config = create_config()")
+        print("config.quick_setup(")
+        print("    batch_size=24,      # 匹配 demo.py")
+        print("    num_epochs=12,      # 匹配 demo.py")
+        print("    learning_rate=2e-4, # 匹配 demo.py")
+        print("    use_lora=True")
+        print(").set_lora_config(")
+        print("    r=48,               # 匹配 demo.py")
+        print("    alpha=24,           # 匹配 demo.py")
+        print("    dropout=0.3         # 匹配 demo.py")
+        print(").auto_mode()")
+        print("")
+        print("# 开始训练")
+        print("best_model, run_dir = train(config)")
+        print("```")
+        
+        # 方法3: 完整配置（包含所有参数）
+        print("\n💡 方法3: 完整配置（包含optimizer eps等）")
+        print("```python")
+        print("config = create_config()")
+        print("# 注意：优化器的 eps=1e-8 参数在 TrainingConfig 中默认已配置")
+        print("# 查看 classifier/config.py 第112行附近的 AdamW 配置")
+        print("```")
+        
+        print("\n✅ 配置完成！所有参数已匹配 demo.py")
+        
+        print("\n📝 参数对照表:")
+        print("┌─────────────────┬─────────────────┬─────────────────┐")
+        print("│ 参数            │ demo.py         │ quick_example   │")
+        print("├─────────────────┼─────────────────┼─────────────────┤")
+        print("│ LoRA r          │ 48              │ 48              │")
+        print("│ LoRA alpha      │ 24              │ 24              │")
+        print("│ LoRA dropout    │ 0.3             │ 0.3             │")
+        print("│ batch_size      │ 24              │ 24              │")
+        print("│ learning_rate   │ 2e-4            │ 2e-4            │")
+        print("│ epochs          │ 12              │ 12              │")
+        print("│ optimizer       │ AdamW(eps=1e-8) │ AdamW(eps=1e-8) │")
+        print("└─────────────────┴─────────────────┴─────────────────┘")
+        
+        print("\n🚀 下一步:")
+        print("1. 运行上述配置代码")
+        print("2. 训练将产生与 demo.py 相同的效果")
+        print("3. 模型会自动打包为 .zip 文件")
+        
+    except ImportError as e:
+        print(f"❌ 导入错误: {e}")
+
+
 if __name__ == "__main__":
     print("选择运行模式:")
     print("1. 完整示例（包含训练）")
     print("2. 仅配置演示")
     print("3. 数据量限制演示")
+    print("4. 匹配 demo.py 参数配置")
     
     try:
-        choice = input("请输入选择 (1/2/3): ").strip()
+        choice = input("请输入选择 (1/2/3/4): ").strip()
         
         if choice == "1":
             main()
@@ -181,6 +286,8 @@ if __name__ == "__main__":
             demo_config_only()
         elif choice == "3":
             demo_data_limits()
+        elif choice == "4":
+            demo_match_demo_py()
         else:
             print("运行完整示例...")
             main()

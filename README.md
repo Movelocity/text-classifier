@@ -57,6 +57,15 @@ python main.py
 #### 使用命令行参数自定义训练：
 ```bash
 python main.py --batch_size 32 --num_epochs 10 --learning_rate 3e-4
+
+# 正常训练并打包
+python main.py --config config.yaml
+
+# 训练但不打包
+python main.py --config config.yaml --no_package
+
+# 使用LoRA训练并打包
+python main.py --use_lora --lora_r 48 --lora_alpha 24
 ```
 
 #### 使用配置文件训练：
