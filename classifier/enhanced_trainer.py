@@ -383,7 +383,9 @@ class EnhancedTrainer:
             if is_best:
                 self.best_auc = eval_auc
             
-            if (epoch + 1) % (self.config.save_steps // len(self.train_loader)) == 0 or is_best:
+            # 计算保存频率，避免除零错误
+            save_frequency = max(1, self.config.save_steps // len(self.train_loader))
+            if (epoch + 1) % save_frequency == 0 or is_best:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 save_dir = os.path.join(
                     self.config.save_dir, 
