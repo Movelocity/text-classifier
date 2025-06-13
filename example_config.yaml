@@ -39,6 +39,30 @@ device: "auto"                     # 自动选择设备 (auto/cpu/cuda)
 # 数据加载配置
 dataloader_num_workers: 0          # 数据加载器进程数
 
+# 参数对照说明:
+# ┌─────────────────────┬─────────────────────┬─────────────────────┐
+# │ 参数                │ demo.py 中的值      │ 该配置文件中的值    │
+# ├─────────────────────┼─────────────────────┼─────────────────────┤
+# │ LoRA r              │ r=48                │ lora_r: 48          │
+# │ LoRA alpha          │ lora_alpha=24       │ lora_alpha: 24      │
+# │ LoRA dropout        │ lora_dropout=0.3    │ lora_dropout: 0.3   │
+# │ 批次大小            │ batch_size=24       │ batch_size: 24      │
+# │ 学习率              │ lr=2e-4             │ learning_rate: 0.0002│
+# │ 训练轮数            │ trainer.train(12)   │ num_epochs: 12      │
+# │ 优化器类型          │ AdamW(eps=1e-8)     │ 默认已配置          │
+# │ 模型名称            │ 'roberta-base'      │ model_name: "roberta-base"│
+# │ 问题类型            │ multi_label_classification│ problem_type: "multi_label_classification"│
+# └─────────────────────┴─────────────────────┴─────────────────────┘
+
+# 使用说明:
+# 1. 命令行使用: python main.py --config demo_config.yaml
+# 2. 在 quick_example.py 中使用:
+#    from classifier.notebook_utils import create_config, train
+#    config = create_config()
+#    config.quick_setup(batch_size=24, num_epochs=12, learning_rate=2e-4)
+#    config.set_lora_config(r=48, alpha=24, dropout=0.3)
+#    best_model, run_dir = train(config) 
+
 # 注意事项:
 # 1. batch_size 过大可能导致显存不足，建议从小开始调整
 # 2. learning_rate 建议从 1e-4 到 5e-4 之间尝试

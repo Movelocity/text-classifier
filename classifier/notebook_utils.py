@@ -220,7 +220,7 @@ def setup_model(config: TrainingConfig, num_labels: int, device: torch.device):
     return model, optimizer, tokenizer
 
 
-def create_label_config(id2label: dict, save_dir: str) -> str:
+def create_label_config(id2label: dict[int, str], save_dir: str) -> str:
     """
     创建标签配置文件
     
@@ -232,7 +232,7 @@ def create_label_config(id2label: dict, save_dir: str) -> str:
         标签配置文件路径
     """
     label_config = {
-        "id2label": {str(k): v for k, v in id2label.items()},
+        "id2label": {k: v for k, v in id2label.items()},
         "label2id": {v: k for k, v in id2label.items()}
     }
     

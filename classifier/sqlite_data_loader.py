@@ -237,14 +237,16 @@ class SQLiteTextDataset(Dataset):
         }
 
 
-def create_data_loaders(split_ratio: List[float] = [0.8, 0.1, 0.1],
-                       batch_size: int = 16,
-                       tokenizer=None,
-                       device: torch.device = None,
-                       max_length: int = 256,
-                       shuffle_train: bool = True,
-                       random_seed: int = 42,
-                       max_samples: Optional[int] = None) -> Tuple:
+def create_data_loaders(
+    split_ratio: List[float] = [0.8, 0.1, 0.1],
+    batch_size: int = 16,
+    tokenizer=None,
+    device: torch.device = None,
+    max_length: int = 256,
+    shuffle_train: bool = True,
+    random_seed: int = 42,
+    max_samples: Optional[int] = None
+) -> Tuple:
     """
     创建训练、验证、测试数据加载器
     

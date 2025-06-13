@@ -23,7 +23,7 @@ def main():
         
         # 这将进行小规模快速训练，适合测试（数据量限制在1万条以内）
         print("开始快速训练（测试模式）...")
-        best_model_path, run_dir = quick_train(
+        best_model_path, run_dir, zip_path = quick_train(
             batch_size=24,      # 匹配 demo.py 的 batch_size
             num_epochs=12,      # 匹配 demo.py 的训练轮数
             learning_rate=2e-4, # 匹配 demo.py 的学习率
